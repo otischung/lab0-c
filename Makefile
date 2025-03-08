@@ -57,6 +57,7 @@ check: qtest
 	./$< -v 3 -f traces/trace-eg.cmd
 
 test: qtest scripts/driver.py
+	$(Q)scripts/check-repo.sh
 	scripts/driver.py -c
 
 valgrind_existence:
@@ -81,6 +82,7 @@ clean:
 	(cd traces; rm -f *~)
 
 distclean: clean
-	rm -f .cmd_history
+	-rm -f .cmd_history
+	-rm -rf .out
 
 -include $(deps)
