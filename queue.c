@@ -194,8 +194,58 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+void q_merge_two(struct list_head *left, struct list_head *right, bool descend)
+{
+    if (!left || !right)
+        return;
+
+    // Create a temporary list
+    struct list_head tmp_head;
+    INIT_LIST_HEAD(&tmp_head);
+
+    // Move list node to temporary list
+    while (!list_empty(left) && !list_empty(right)) {
+        element_t *left_front = list_first_entry(left, element_t, list);
+        element_t *right_front = list_first_entry(right, element_t, list);
+        char *first_str = left_front->value, *second_str = right_front->value;
+        bool condition;
+        if (descend)
+            condition = strcmp(first_str, second_str) > 0;
+        else
+            condition = strcmp(first_str, second_str) < 0;
+        element_t *minimum = condition ? left_front : right_front;
+        list_move_tail(&minimum->list, &tmp_head);
+    }
+
+    // Move the remaining nodes
+    list_splice_tail_init(left, &tmp_head);
+    list_splice_tail_init(right, &tmp_head);
+
+    // Move the temporary list back to the left
+    list_splice(&tmp_head, left);
+}
+
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void q_sort(struct list_head *head, bool descend)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
+    // Create fast and slow pointer to get the middle node
+    struct list_head *slow = head, *fast = head->next;
+    for (; fast != head && (fast = fast->next) != head; fast = fast->next)
+        slow = slow->next;
+
+    // Create a new list
+    struct list_head left;
+
+    // Move the nodes from the beginning to the middle node in `head` list to
+    // `left` list
+    list_cut_position(&left, head, slow);
+    q_sort(&left, descend);
+    q_sort(head, descend);
+    q_merge_two(head, &left, descend);
+}
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
