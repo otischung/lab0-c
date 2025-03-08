@@ -296,5 +296,31 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    return 0;
+    if (!head || list_empty(head))
+        return 0;
+
+    // We need to locate the first queue
+    queue_contex_t *first = NULL, *entry, *safe;
+    bool first_time = true;
+    int size = 0;
+    list_for_each_entry_safe(entry, safe, head, chain) {
+        // Locate the first queue
+        if (first_time) {
+            first_time = false;
+            first = entry;
+            size += q_size(first->q);
+            continue;
+        }
+        size += q_size(entry->q);
+
+        // Merge the following queues into the first queue
+        q_merge_two(first->q, entry->q, descend);
+
+        // Move the current queue to the beginning of the `queue_chain_t`
+        list_move(&entry->chain, head);
+    }
+    // After the procedure, the first queue will be at the tail of the `queue_chain_t`.
+    // Therefore, we move the first queue to the beginning of the `queue_chain_t`.
+    list_move(&first->chain, head);
+    return size;
 }
