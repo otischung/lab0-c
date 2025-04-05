@@ -186,7 +186,7 @@ build_commit_trailer_regex() {
   done < <(git config --get-regexp 'trailer.*.key')
 
   if [[ ${#trailers_by[@]} -eq 0 ]]; then
-    trailers_by=("${DEFAULT_TRAILERS_BY[@]}")
+    trailers_by=("${KNOWN_TRAILERS_BY[@]}")
   fi
 
   # Possible trailers :
@@ -476,7 +476,7 @@ validate_commit_message() {
 
   # Alert if the commit message appears to be written in Chinese.
   # This pattern matches any Chinese character (common CJK Unified Ideographs).
-  MISSPELLED_WORDS=$(echo "$FULL_COMMIT_MSG" | grep "[一-龥]")
+  MISSPELLED_WORDS=$(echo "$FULL_COMMIT_MSG" | LC_ALL=C grep "[一-龥]")
   if [ -n "$MISSPELLED_WORDS" ]; then
     add_warning 1 "Commit message appears to be written in Chinese: $MISSPELLED_WORDS"
   fi
